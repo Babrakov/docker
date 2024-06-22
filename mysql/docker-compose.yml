@@ -2,6 +2,7 @@ version: '3.8'
 services:
   db:
     image: 'mysql'
+    container_name: mysql-container
     volumes:
       # Where our data will be persisted
       - ./db:/var/lib/mysql:z
