@@ -2,12 +2,29 @@ version: '3.8'
 services:
   postgres:
     image: postgres:latest
-    container_name: my-postgres-container
+    # for vacuuming only
+    shm_size: 1g
+    restart: always
+    # make static ip
+    networks:
+      postgres-network:
+        ipv4_address: 10.5.0.2
+    container_name: postgres-container
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: cerber
-    ports:
-      - "2345:5432"
+    # to not share posrt for outside
+#    ports:
+#      - "5432:5432"
     volumes:
       - ./db:/var/lib/postgresql/data
+      - ./files:/tmp/files
+
+networks:
+  postgres-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
