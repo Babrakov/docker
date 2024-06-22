@@ -5,6 +5,8 @@ services:
     container_name: mysql-container
     volumes:
       # Where our data will be persisted
+      # Add :z to avoid SELinux problems
+      # Without a label, the security system might prevent the processes running inside the container from using the content.
       - ./db:/var/lib/mysql:z
       - ./files:/var/lib/mysql-files:z
     restart: 'always'
