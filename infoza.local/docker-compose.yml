@@ -1,0 +1,57 @@
+# Check https://dev.to/jackmiras/xdebug-in-phpstorm-with-docker-2al8
+# to setup PhpStorm
+services:
+  web:
+    container_name: infoza-web-container
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    build: .
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./src:/var/www/html
+      - ./config/php.ini:/usr/local/etc/php/php.ini
+      - ./config/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./config/apache.conf:/etc/apache2/sites-available/000-default.conf
+      - ./docker-certs/certificate.crt:/etc/ssl/certs/certificate.crt
+      - ./docker-certs/private.key:/etc/ssl/private/private.key
+    networks:
+      - infoza_network
+      
+  db:
+    image: mysql:8.0.39
+    container_name: infoza-mysql-container
+    volumes:
+      # Where our data will be persisted
+      # Add :z to avoid SELinux problems
+      # Without a label, the security system might prevent the processes running inside the container from using the content.
+      - ./db:/var/lib/mysql:z
+      - ./files:/var/lib/mysql-files:z
+      - ./config/my.cnf:/etc/mysql/conf.d/my.cnf
+    restart: 'always'
+    expose:
+      # Opens port 3306 on the container
+      - '3306'
+    ports:
+      # <Port exposed> : < MySQL Port running inside container>
+      - '3307:3306'
+#    command: --lower_case_table_names=1
+    environment:
+      MYSQL_DATABASE: 'cerber'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'user'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: 'password'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: 'password'
+    networks:
+      - infoza_network
+
+networks:
+  infoza_network:
+    driver: bridge
+
+# Names our volume
+volumes:
+  mydb:
